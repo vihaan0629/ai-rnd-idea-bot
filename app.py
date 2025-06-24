@@ -1,16 +1,26 @@
-import streamlit as st
-from idea_generator import generate_rnd_ideas
+from transformers import pipeline
 
-st.set_page_config(page_title="AI R&D Idea Generator", page_icon="💡")
+# Load smaller model for faster, reliable generation
+generator = pipeline("text-generation", model="distilgpt2")
 
-st.title("💡 AI R&D Idea Generator")
-st.markdown("A simple AI bot that suggests **innovative ideas** for your R&D challenges.")
-
-query = st.text_input("🔍 Describe your research or development challenge:")
-
-if st.button("Generate Ideas") and query:
-    with st.spinner("Thinking..."):
-        ideas = generate_rnd_ideas(query)
-        st.success("Here are some ideas:")
-        for idx, idea in enumerate(ideas, 1):
-            st.markdown(f"**Idea {idx}:** {idea}")
+def generate_rnd_ideas(prompt, num_ideas=3):
+    full_prompt = f"List {num_ideas} distinct, innovative research and development ideas related to:\n{prompt}\n\n1."
+    
+    results = generator(
+        full_prompt,
+        max_length=80,
+        num_return_sequences=num_ideas,
+        do_sample=True,
+        temperature=0.9,
+        top_p=0.9,
+        repetition_penalty=1.2,
+        pad_token_id=50256  # required for GPT-2 models
+    )
+    
+    ideas = []
+    for res in results:
+        text = res['generated_text']
+        # Remove the prompt part from the generated text
+        idea_text = text.split(full_prompt)[-1].strip()
+        ideas.append(idea_text)
+    return ideas
