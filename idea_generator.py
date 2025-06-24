@@ -3,7 +3,7 @@ from transformers import pipeline
 # Load smaller model for faster, reliable generation
 generator = pipeline("text-generation", model="distilgpt2")
 
-def generate_rnd_ideas(prompt, num_ideas=5):
+def generate_rnd_ideas(prompt, num_ideas=3):
     full_prompt = f"List {num_ideas} distinct, innovative research and development ideas related to:\n{prompt}\n\n1."
     
     results = generator(
